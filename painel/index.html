@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DigiStore Admin</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; background: #10131a; color: #e8eef9; }
+    h1 { margin-bottom: 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .card { background: #1a2030; border: 1px solid #2f3b58; border-radius: 8px; padding: 12px; }
+    table { width: 100%; border-collapse: collapse; background: #1a2030; }
+    th, td { border-bottom: 1px solid #2f3b58; padding: 8px; text-align: left; }
+    th { color: #8fc0ff; }
+  </style>
+</head>
+<body>
+  <h1>Painel DigiStore</h1>
+  <div class="grid">
+    <div class="card"><b>Usuários</b><div id="users">0</div></div>
+    <div class="card"><b>Pedidos</b><div id="pedidos">0</div></div>
+    <div class="card"><b>Receita (PIX)</b><div id="faturamento">R$0.00</div></div>
+    <div class="card"><b>Mensagens</b><div id="mensagens">0</div></div>
+  </div>
+
+  <h2>Saldos</h2>
+  <table>
+    <thead><tr><th>Número</th><th>Nome</th><th>Saldo</th></tr></thead>
+    <tbody id="saldosBody"></tbody>
+  </table>
+
+  <script>
+    async function loadStats() {
+      const res = await fetch('/api/stats');
+      const data = await res.json();
+
+      document.getElementById('users').textContent = data.users;
+      document.getElementById('pedidos').textContent = data.pedidos;
+      document.getElementById('faturamento').textContent = `R$${Number(data.faturamento).toFixed(2)}`;
+      document.getElementById('mensagens').textContent = data.mensagens;
+
+      const tbody = document.getElementById('saldosBody');
+      tbody.innerHTML = '';
+      for (const s of data.saldos) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${s.number}</td><td>${s.name || '-'}</td><td>R$${Number(s.balance).toFixed(2)}</td>`;
+        tbody.appendChild(tr);
+      }
+    }
+
+    loadStats();
+    setInterval(loadStats, 10000);
+  </script>
+</body>
+</html>
